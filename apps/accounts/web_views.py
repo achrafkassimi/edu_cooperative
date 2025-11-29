@@ -41,6 +41,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['recent_enrollments'] = Enrollment.objects.select_related(
             'student', 'course'
         ).order_by('-created_at')[:5]
+        # print(context)
         
         return context
 

@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
 from apps.courses.models import Course, Enrollment
+from apps.courses.serializers import CourseSerializer, EnrollmentSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):

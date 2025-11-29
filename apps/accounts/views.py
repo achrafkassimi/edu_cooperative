@@ -2,14 +2,15 @@ from rest_framework import viewsets, generics, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
+from apps.accounts.models import User
 from .models import User, UserProfile
 from .serializers import (
     UserSerializer, RegisterSerializer, 
     ChangePasswordSerializer, UserProfileSerializer
 )
 
-User = get_user_model()
+# User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
     """User registration endpoint"""

@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count
 from .models import Instructor
+from django.db.models import Count, Q
+
 
 
 @admin.register(Instructor)

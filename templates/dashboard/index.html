@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Educational Cooperative{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-gray-500 mt-1">Welcome back, {{ user.full_name|default:user.email }}!</p>
+        </div>
+        <div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-plus mr-2"></i>Quick Action
+            </button>
+        </div>
+    </div>
+    
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Students -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 fade-in">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Total Students</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_students }}</p>
+                    <p class="text-sm text-green-600 mt-2">
+                        <i class="fas fa-arrow-up"></i> Active
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-graduate text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Courses -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 fade-in" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Active Courses</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_courses }}</p>
+                    <p class="text-sm text-blue-600 mt-2">
+                        <i class="fas fa-arrow-right"></i> Running
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-book text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Enrollments -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 fade-in" style="animation-delay: 0.2s">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Enrollments</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_enrollments }}</p>
+                    <p class="text-sm text-green-600 mt-2">
+                        <i class="fas fa-arrow-up"></i> This Month
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clipboard-list text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Payments -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 fade-in" style="animation-delay: 0.3s">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Pending Payments</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ pending_payments_count }}</p>
+                    <p class="text-sm text-red-600 mt-2">
+                        {{ pending_payments_amount|floatformat:2 }} DH
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-money-bill-wave text-red-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Revenue Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue</h3>
+            <div class="h-64 flex items-center justify-center text-gray-400">
+                <div class="text-center">
+                    <i class="fas fa-chart-line text-4xl mb-2"></i>
+                    <p>Chart will be displayed here</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enrollment Trends -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Enrollment Trends</h3>
+            <div class="h-64 flex items-center justify-center text-gray-400">
+                <div class="text-center">
+                    <i class="fas fa-chart-bar text-4xl mb-2"></i>
+                    <p>Chart will be displayed here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Students -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Recent Students</h3>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for student in recent_students %}
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-medium">{{ student.full_name|first }}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ student.full_name }}</p>
+                                <p class="text-xs text-gray-500">{{ student.education_level }}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-medium rounded-full {% if student.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ student.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-3xl mb-2"></i>
+                    <p>No recent students</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Recent Enrollments -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Recent Enrollments</h3>
+            </div>
+            <div class="divide-y divide-gray-200">
+                {% for enrollment in recent_enrollments %}
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">{{ enrollment.student.full_name }}</p>
+                            <p class="text-xs text-gray-500">{{ enrollment.course.course_name }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">{{ enrollment.enrollment_date|date:"M d, Y" }}</p>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full {% if enrollment.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ enrollment.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-3xl mb-2"></i>
+                    <p>No recent enrollments</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

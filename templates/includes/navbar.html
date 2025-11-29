@@ -74,10 +74,10 @@
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" class="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition">
                         <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm font-medium">{{ user.full_name|first|default:'U' }}</span>
+                            <span class="text-white text-sm font-medium">A</span>
                         </div>
                         <div class="hidden md:block text-left">
-                            <p class="text-sm font-medium text-gray-900">{{ user.full_name|default:user.email }}</p>
+                            <p class="text-sm font-medium text-gray-900">{{ user.full_name }}</p>
                             <p class="text-xs text-gray-500">{{ user.get_user_type_display }}</p>
                         </div>
                         <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
