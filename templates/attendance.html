@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Tab indicator */
+        .tab-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        /* Radio button styling for attendance status */
+        .attendance-radio {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .attendance-radio:checked {
+            border-color: #3b82f6;
+        }
+        
+        .attendance-radio:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+        }
+        
+        /* Status-specific radio colors */
+        .status-present:checked {
+            border-color: #10b981;
+        }
+        .status-present:checked::after {
+            background-color: #10b981;
+        }
+        
+        .status-absent:checked {
+            border-color: #ef4444;
+        }
+        .status-absent:checked::after {
+            background-color: #ef4444;
+        }
+        
+        .status-late:checked {
+            border-color: #f59e0b;
+        }
+        .status-late:checked::after {
+            background-color: #f59e0b;
+        }
+        
+        .status-excused:checked {
+            border-color: #6b7280;
+        }
+        .status-excused:checked::after {
+            background-color: #6b7280;
+        }
+        
+        /* Calendar styling */
+        .calendar-day {
+            min-height: 100px;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .attendance-high {
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .attendance-medium {
+            background-color: rgba(245, 158, 11, 0.2);
+        }
+        
+        .attendance-low {
+            background-color: rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md z-10 flex-shrink-0">
+            <div class="p-4 border-b">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-graduation-cap text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-800">EduManage</h1>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-users mr-3"></i>
+                            Students
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-book mr-3"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li>
+                        <button id="attendanceTab" class="w-full text-left px-4 py-2 rounded-lg bg-blue-50 text-blue-600 flex items-center">
+                            <i class="fas fa-user-check mr-3"></i>
+                            Attendance
+                        </button>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-dollar-sign mr-3"></i>
+                            Payments
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            Reports
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-8 pt-8 border-t">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-cog mr-3"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-question-circle mr-3"></i>
+                                Help & Support
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center flex-1">
+                        <h2 class="text-xl font-semibold text-gray-800">Attendance Management</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">3</span>
+                            </button>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="relative">
+                            <button class="flex items-center text-gray-700 focus:outline-none">
+                                <img src="https://picsum.photos/seed/admin123/40/40.jpg" alt="Profile" class="w-10 h-10 rounded-full mr-2">
+                                <span class="font-medium">Admin User</span>
+                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <!-- Attendance Recording View -->
+                <div id="recordingView" class="p-6">
+                    <!-- Header -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div class="mb-4 md:mb-0">
+                                <h3 class="text-lg font-semibold text-gray-800">Record Attendance</h3>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                    <input type="date" id="attendanceDate" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Course *</label>
+                                    <select id="courseSelector" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Select Course</option>
+                                        <option value="1">Advanced Mathematics</option>
+                                        <option value="2">Physics 101</option>
+                                        <option value="3">English Literature</option>
+                                        <option value="4">Web Development</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Course Information Display -->
+                    <div id="courseInfoDisplay" class="bg-white rounded-lg shadow mb-6 p-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Course Name</p>
+                                <p class="text-sm font-medium text-gray-800">Advanced Mathematics</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Instructor</p>
+                                <p class="text-sm font-medium text-gray-800">Dr. John Smith</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Schedule</p>
+                                <p class="text-sm font-medium text-gray-800">Mon, Wed, Fri</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Session Time</p>
+                                <p class="text-sm font-medium text-gray-800">10:00 AM - 12:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                            <div class="mb-4 md:mb-0">
+                                <h3 class="text-lg font-semibold text-gray-800">Bulk Actions</h3>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="markAllPresent" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <i class="fas fa-user-check mr-2"></i> Mark All Present
+                                </button>
+                                <button id="markAllAbsent" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <i class="fas fa-user-times mr-2"></i> Mark All Absent
+                                </button>
+                                <button id="resetAll" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    <i class="fas fa-undo mr-2"></i> Reset All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Student List -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Student List</h3>
+                            <div class="relative">
+                                <input type="text" placeholder="Search students..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Student
+                                        </th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Check-in Time
+                                        </th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Check-out Time
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Notes
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="studentAttendanceList">
+                                    <!-- Student rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Summary</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-gray-800" id="totalStudents">20</p>
+                                <p class="text-sm text-gray-600">Total Students</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-green-600" id="presentCount">0</p>
+                                <p class="text-sm text-gray-600">Present</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-red-600" id="absentCount">0</p>
+                                <p class="text-sm text-gray-600">Absent</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-yellow-600" id="lateCount">0</p>
+                                <p class="text-sm text-gray-600">Late</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex justify-end space-x-2">
+                            <button id="cancelAttendance" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Cancel
+                            </button>
+                            <button id="saveAttendance" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-save mr-2"></i> Save Attendance
+                            </button>
+                            <button id="saveAndNotify" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <i class="fas fa-envelope mr-2"></i> Save & Send Notifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attendance Report View -->
+                <div id="reportView" class="p-6 hidden">
+                    <!-- Filters -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Filters</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range *</label>
+                                <div class="flex space-x-2">
+                                    <input type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Courses</option>
+                                    <option value="1">Advanced Mathematics</option>
+                                    <option value="2">Physics 101</option>
+                                    <option value="3">English Literature</option>
+                                    <option value="4">Web Development</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Student</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Students</option>
+                                    <option value="1">John Doe</option>
+                                    <option value="2">Jane Smith</option>
+                                    <option value="3">Michael Johnson</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Status</option>
+                                    <option value="present">Present</option>
+                                    <option value="absent">Absent</option>
+                                    <option value="late">Late</option>
+                                    <option value="excused">Excused</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Instructors</option>
+                                    <option value="1">Dr. John Smith</option>
+                                    <option value="2">Prof. Robert Johnson</option>
+                                    <option value="3">Ms. Sarah Williams</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end">
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- View Options -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <button id="summaryViewBtn" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-md">
+                                    <i class="fas fa-chart-pie mr-1"></i> Summary View
+                                </button>
+                                <button id="detailedViewBtn" class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-md">
+                                    <i class="fas fa-table mr-1"></i> Detailed View
+                                </button>
+                                <button id="calendarViewBtn" class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-md">
+                                    <i class="fas fa-calendar-alt mr-1"></i> Calendar View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary View -->
+                    <div id="summaryViewContent">
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+                            <div class="bg-white rounded-lg shadow p-4 card-hover">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-calendar-check text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Total Sessions</p>
+                                        <p class="text-xl font-bold text-gray-800">156</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4 card-hover">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-percentage text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Average Attendance Rate</p>
+                                        <p class="text-xl font-bold text-gray-800">92.5%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4 card-hover">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user-check text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Total Present</p>
+                                        <p class="text-xl font-bold text-gray-800">1,443</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4 card-hover">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user-times text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Total Absent</p>
+                                        <p class="text-xl font-bold text-gray-800">117</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4 card-hover">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-clock text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Total Late</p>
+                                        <p class="text-xl font-bold text-gray-800">56</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Charts -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Attendance Trend</h3>
+                                <div class="h-64">
+                                    <canvas id="attendanceTrendChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Distribution</h3>
+                                <div class="h-64">
+                                    <canvas id="statusDistributionChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Course Comparison</h3>
+                                <div class="h-64">
+                                    <canvas id="courseComparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alerts Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Students with Low Attendance</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center p-3 bg-red-50 rounded-lg">
+                                        <img src="https://picsum.photos/seed/student1/40/40.jpg" alt="Student" class="w-10 h-10 rounded-full mr-3">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-800">John Doe</p>
+                                            <p class="text-xs text-gray-600">Advanced Mathematics</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-red-600">65%</p>
+                                            <p class="text-xs text-gray-600">Attendance</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center p-3 bg-red-50 rounded-lg">
+                                        <img src="https://picsum.photos/seed/student2/40/40.jpg" alt="Student" class="w-10 h-10 rounded-full mr-3">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-800">Jane Smith</p>
+                                            <p class="text-xs text-gray-600">Physics 101</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-red-600">70%</p>
+                                            <p class="text-xs text-gray-600">Attendance</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center p-3 bg-yellow-50 rounded-lg">
+                                        <img src="https://picsum.photos/seed/student3/40/40.jpg" alt="Student" class="w-10 h-10 rounded-full mr-3">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-800">Michael Johnson</p>
+                                            <p class="text-xs text-gray-600">English Literature</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-yellow-600">78%</p>
+                                            <p class="text-xs text-gray-600">Attendance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Courses with Low Attendance</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center p-3 bg-red-50 rounded-lg">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-book text-blue-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-800">Advanced Mathematics</p>
+                                            <p class="text-xs text-gray-600">Dr. John Smith</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-red-600">72%</p>
+                                            <p class="text-xs text-gray-600">Attendance</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center p-3 bg-yellow-50 rounded-lg">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-flask text-green-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-800">Physics 101</p>
+                                            <p class="text-xs text-gray-600">Prof. Robert Johnson</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-yellow-600">80%</p>
+                                            <p class="text-xs text-gray-600">Attendance</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-book-open text-purple-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-800">English Literature</p>
+                                            <p class="text-xs text-gray-600">Ms. Sarah Williams</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-medium text-green-600">88%</p>
+                                            <p class="text-xs text-gray-600">Attendance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detailed View (Hidden by default) -->
+                    <div id="detailedViewContent" class="hidden">
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Date
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Course
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Student
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Check-in Time
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Check-out Time
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Notes
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Nov 20, 2023</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">John Doe</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Present</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">9:55 AM</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">12:05 PM</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Nov 20, 2023</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Jane Smith</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Late</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">10:15 AM</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">12:05 PM</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Traffic delay</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Nov 20, 2023</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Michael Johnson</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Absent</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                            <td class="px-4 py-3 text-sm text-gray-800">Sick leave</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar View (Hidden by default) -->
+                    <div id="calendarViewContent" class="hidden">
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">November 2023</h3>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-7 gap-1">
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Sun</div>
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Mon</div>
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Tue</div>
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Wed</div>
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Thu</div>
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Fri</div>
+                                <div class="text-center text-xs font-medium text-gray-500 py-2">Sat</div>
+                                
+                                <!-- Calendar days will be populated by JavaScript -->
+                            </div>
+                            
+                            <!-- Legend -->
+                            <div class="flex items-center justify-center mt-6 space-x-4">
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 attendance-high rounded mr-2"></div>
+                                    <span class="text-sm text-gray-600">High Attendance (90%+)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 attendance-medium rounded mr-2"></div>
+                                    <span class="text-sm text-gray-600">Medium Attendance (70-89%)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 attendance-low rounded mr-2"></div>
+                                    <span class="text-sm text-gray-600">Low Attendance (<70%)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                                    <span class="text-sm text-gray-600">No Data</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="bg-white rounded-lg shadow p-4 mt-6">
+                        <div class="flex justify-end space-x-2">
+                            <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <i class="fas fa-file-excel mr-2"></i> Export to Excel
+                            </button>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-print mr-2"></i> Print Report
+                            </button>
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <i class="fas fa-envelope mr-2"></i> Send Email Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attendance Calendar View -->
+                <div id="calendarView" class="p-6 hidden">
+                    <!-- Calendar Display -->
+                    <div class="bg-white rounded-lg shadow p-4 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">November 2023</h3>
+                            <div class="flex items-center space-x-2">
+                                <button id="monthViewBtn" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-md">
+                                    Month
+                                </button>
+                                <button id="weekViewBtn" class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-md">
+                                    Week
+                                </button>
+                                <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-md">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-md">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-7 gap-1">
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Sun</div>
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Mon</div>
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Tue</div>
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Wed</div>
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Thu</div>
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Fri</div>
+                            <div class="text-center text-xs font-medium text-gray-500 py-2">Sat</div>
+                            
+                            <!-- Calendar days will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Legend</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 attendance-high rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">High Attendance (90%+)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 attendance-medium rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">Medium Attendance (70-89%)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 attendance-low rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">Low Attendance (<70%)</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">No Data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Session Details Modal -->
+    <div id="sessionModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity modal-backdrop" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full fade-in">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Session Details - Nov 20, 2023
+                            </h3>
+                            <div class="mt-4">
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Course</p>
+                                            <p class="text-sm font-medium text-gray-800">Advanced Mathematics</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Instructor</p>
+                                            <p class="text-sm font-medium text-gray-800">Dr. John Smith</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Time</p>
+                                            <p class="text-sm font-medium text-gray-800">10:00 AM - 12:00 PM</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Attendance Rate</p>
+                                            <p class="text-sm font-medium text-gray-800">85%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                        <span>Attendance Summary</span>
+                                        <span>17/20 Students</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Student List</h4>
+                                    <div class="max-h-48 overflow-y-auto">
+                                        <table class="w-full">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                <tr>
+                                                    <td class="px-2 py-1 text-sm text-gray-800">John Doe</td>
+                                                    <td class="px-2 py-1 text-sm text-gray-800">
+                                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Present</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-2 py-1 text-sm text-gray-800">Jane Smith</td>
+                                                    <td class="px-2 py-1 text-sm text-gray-800">
+                                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Late</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-2 py-1 text-sm text-gray-800">Michael Johnson</td>
+                                                    <td class="px-2 py-1 text-sm text-gray-800">
+                                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Absent</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="recordAttendanceBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Record/Edit Attendance
+                    </button>
+                    <button type="button" id="closeModalBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample student data
+        const students = [
+            {
+                id: 1,
+                name: "John Doe",
+                photo: "https://picsum.photos/seed/student1/40/40.jpg"
+            },
+            {
+                id: 2,
+                name: "Jane Smith",
+                photo: "https://picsum.photos/seed/student2/40/40.jpg"
+            },
+            {
+                id: 3,
+                name: "Michael Johnson",
+                photo: "https://picsum.photos/seed/student3/40/40.jpg"
+            },
+            {
+                id: 4,
+                name: "Emily Davis",
+                photo: "https://picsum.photos/seed/student4/40/40.jpg"
+            },
+            {
+                id: 5,
+                name: "Robert Wilson",
+                photo: "https://picsum.photos/seed/student5/40/40.jpg"
+            },
+            {
+                id: 6,
+                name: "Sarah Brown",
+                photo: "https://picsum.photos/seed/student6/40/40.jpg"
+            },
+            {
+                id: 7,
+                name: "David Miller",
+                photo: "https://picsum.photos/seed/student7/40/40.jpg"
+            },
+            {
+                id: 8,
+                name: "Jessica Taylor",
+                photo: "https://picsum.photos/seed/student8/40/40.jpg"
+            },
+            {
+                id: 9,
+                name: "Christopher Anderson",
+                photo: "https://picsum.photos/seed/student9/40/40.jpg"
+            },
+            {
+                id: 10,
+                name: "Amanda Thomas",
+                photo: "https://picsum.photos/seed/student10/40/40.jpg"
+            },
+            {
+                id: 11,
+                name: "Daniel Jackson",
+                photo: "https://picsum.photos/seed/student11/40/40.jpg"
+            },
+            {
+                id: 12,
+                name: "Michelle White",
+                photo: "https://picsum.photos/seed/student12/40/40.jpg"
+            },
+            {
+                id: 13,
+                name: "Brian Harris",
+                photo: "https://picsum.photos/seed/student13/40/40.jpg"
+            },
+            {
+                id: 14,
+                name: "Lisa Martin",
+                photo: "https://picsum.photos/seed/student14/40/40.jpg"
+            },
+            {
+                id: 15,
+                name: "Kevin Thompson",
+                photo: "https://picsum.photos/seed/student15/40/40.jpg"
+            },
+            {
+                id: 16,
+                name: "Nicole Garcia",
+                photo: "https://picsum.photos/seed/student16/40/40.jpg"
+            },
+            {
+                id: 17,
+                name: "Ryan Martinez",
+                photo: "https://picsum.photos/seed/student17/40/40.jpg"
+            },
+            {
+                id: 18,
+                name: "Stephanie Robinson",
+                photo: "https://picsum.photos/seed/student18/40/40.jpg"
+            },
+            {
+                id: 19,
+                name: "Jason Clark",
+                photo: "https://picsum.photos/seed/student19/40/40.jpg"
+            },
+            {
+                id: 20,
+                name: "Amy Rodriguez",
+                photo: "https://picsum.photos/seed/student20/40/40.jpg"
+            }
+        ];
+        
+        // DOM Elements
+        const recordingView = document.getElementById('recordingView');
+        const reportView = document.getElementById('reportView');
+        const calendarView = document.getElementById('calendarView');
+        const sessionModal = document.getElementById('sessionModal');
+        
+        // View switching
+        function showRecordingView() {
+            recordingView.classList.remove('hidden');
+            reportView.classList.add('hidden');
+            calendarView.classList.add('hidden');
+        }
+        
+        function showReportView() {
+            recordingView.classList.add('hidden');
+            reportView.classList.remove('hidden');
+            calendarView.classList.add('hidden');
+        }
+        
+        function showCalendarView() {
+            recordingView.classList.add('hidden');
+            reportView.classList.add('hidden');
+            calendarView.classList.remove('hidden');
+        }
+        
+        // Populate student attendance list
+        function populateStudentList() {
+            const studentList = document.getElementById('studentAttendanceList');
+            studentList.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <div class="flex items-center">
+                            <img src="${student.photo}" alt="${student.name}" class="w-8 h-8 rounded-full mr-3">
+                            <span>${student.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex justify-center space-x-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="status-${student.id}" value="present" class="attendance-radio status-present" checked>
+                                <span class="ml-1 text-sm text-green-600">P</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="status-${student.id}" value="absent" class="attendance-radio status-absent">
+                                <span class="ml-1 text-sm text-red-600">A</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="status-${student.id}" value="late" class="attendance-radio status-late">
+                                <span class="ml-1 text-sm text-yellow-600">L</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="status-${student.id}" value="excused" class="attendance-radio status-excused">
+                                <span class="ml-1 text-sm text-gray-600">E</span>
+                            </label>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <input type="time" class="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <input type="time" class="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </td>
+                    <td class="px-4 py-3">
+                        <input type="text" placeholder="Add notes..." class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </td>
+                `;
+                
+                studentList.appendChild(row);
+            });
+            
+            // Add event listeners to status radio buttons
+            document.querySelectorAll('.attendance-radio').forEach(radio => {
+                radio.addEventListener('change', updateSummary);
+            });
+        }
+        
+        // Update attendance summary
+        function updateSummary() {
+            let presentCount = 0;
+            let absentCount = 0;
+            let lateCount = 0;
+            
+            students.forEach(student => {
+                const status = document.querySelector(`input[name="status-${student.id}"]:checked`).value;
+                
+                if (status === 'present') presentCount++;
+                else if (status === 'absent') absentCount++;
+                else if (status === 'late') lateCount++;
+            });
+            
+            document.getElementById('presentCount').textContent = presentCount;
+            document.getElementById('absentCount').textContent = absentCount;
+            document.getElementById('lateCount').textContent = lateCount;
+        }
+        
+        // Course selector change event
+        document.getElementById('courseSelector').addEventListener('change', function() {
+            if (this.value) {
+                document.getElementById('courseInfoDisplay').classList.remove('hidden');
+                populateStudentList();
+                updateSummary();
+            } else {
+                document.getElementById('courseInfoDisplay').classList.add('hidden');
+            }
+        });
+        
+        // Bulk actions
+        document.getElementById('markAllPresent').addEventListener('click', function() {
+            students.forEach(student => {
+                document.querySelector(`input[name="status-${student.id}"][value="present"]`).checked = true;
+            });
+            updateSummary();
+        });
+        
+        document.getElementById('markAllAbsent').addEventListener('click', function() {
+            students.forEach(student => {
+                document.querySelector(`input[name="status-${student.id}"][value="absent"]`).checked = true;
+            });
+            updateSummary();
+        });
+        
+        document.getElementById('resetAll').addEventListener('click', function() {
+            students.forEach(student => {
+                document.querySelector(`input[name="status-${student.id}"][value="present"]`).checked = true;
+            });
+            
+            // Clear check-in and check-out times
+            document.querySelectorAll('input[type="time"]').forEach(input => {
+                input.value = '';
+            });
+            
+            // Clear notes
+            document.querySelectorAll('input[placeholder="Add notes..."]').forEach(input => {
+                input.value = '';
+            });
+            
+            updateSummary();
+        });
+        
+        // View options in report view
+        document.getElementById('summaryViewBtn').addEventListener('click', function() {
+            document.getElementById('summaryViewContent').classList.remove('hidden');
+            document.getElementById('detailedViewContent').classList.add('hidden');
+            document.getElementById('calendarViewContent').classList.add('hidden');
+            
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('detailedViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('detailedViewBtn').classList.add('text-gray-600');
+            document.getElementById('calendarViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('calendarViewBtn').classList.add('text-gray-600');
+        });
+        
+        document.getElementById('detailedViewBtn').addEventListener('click', function() {
+            document.getElementById('summaryViewContent').classList.add('hidden');
+            document.getElementById('detailedViewContent').classList.remove('hidden');
+            document.getElementById('calendarViewContent').classList.add('hidden');
+            
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('summaryViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('summaryViewBtn').classList.add('text-gray-600');
+            document.getElementById('calendarViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('calendarViewBtn').classList.add('text-gray-600');
+        });
+        
+        document.getElementById('calendarViewBtn').addEventListener('click', function() {
+            document.getElementById('summaryViewContent').classList.add('hidden');
+            document.getElementById('detailedViewContent').classList.add('hidden');
+            document.getElementById('calendarViewContent').classList.remove('hidden');
+            
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('summaryViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('summaryViewBtn').classList.add('text-gray-600');
+            document.getElementById('detailedViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('detailedViewBtn').classList.add('text-gray-600');
+        });
+        
+        // Month/Week view toggle in calendar view
+        document.getElementById('monthViewBtn').addEventListener('click', function() {
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('weekViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('weekViewBtn').classList.add('text-gray-600');
+        });
+        
+        document.getElementById('weekViewBtn').addEventListener('click', function() {
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('monthViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('monthViewBtn').classList.add('text-gray-600');
+        });
+        
+        // Modal interactions
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            sessionModal.classList.add('hidden');
+        });
+        
+        document.getElementById('recordAttendanceBtn').addEventListener('click', function() {
+            sessionModal.classList.add('hidden');
+            showRecordingView();
+        });
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Attendance Trend Chart
+            const trendCtx = document.getElementById('attendanceTrendChart');
+            if (trendCtx) {
+                new Chart(trendCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Attendance Rate',
+                            data: [92, 94, 91, 93],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 80,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Status Distribution Chart
+            const statusCtx = document.getElementById('statusDistributionChart');
+            if (statusCtx) {
+                new Chart(statusCtx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Present', 'Absent', 'Late'],
+                        datasets: [{
+                            data: [85, 10, 5],
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(239, 68, 68, 0.8)',
+                                'rgba(245, 158, 11, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(16, 185, 129)',
+                                'rgb(239, 68, 68)',
+                                'rgb(245, 158, 11)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Course Comparison Chart
+            const courseCtx = document.getElementById('courseComparisonChart');
+            if (courseCtx) {
+                new Chart(courseCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Math', 'Physics', 'English', 'Web Dev'],
+                        datasets: [{
+                            label: 'Attendance Rate',
+                            data: [92, 88, 95, 85],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(139, 92, 246, 0.8)',
+                                'rgba(245, 158, 11, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(59, 130, 246)',
+                                'rgb(16, 185, 129)',
+                                'rgb(139, 92, 246)',
+                                'rgb(245, 158, 11)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 70,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Populate calendar
+        function populateCalendar() {
+            const calendarGrids = document.querySelectorAll('.grid.grid-cols-7');
+            
+            calendarGrids.forEach(grid => {
+                // Clear existing days (except headers)
+                const existingDays = grid.querySelectorAll('.calendar-day');
+                existingDays.forEach(day => day.remove());
+                
+                // Add empty cells for days before month starts
+                for (let i = 0; i < 3; i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'border border-gray-200 p-2';
+                    grid.appendChild(emptyDay);
+                }
+                
+                // Add days of the month
+                for (let day = 1; day <= 30; day++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'calendar-day border border-gray-200 p-2 cursor-pointer';
+                    
+                    // Sample attendance data
+                    const attendanceRate = Math.floor(Math.random() * 40) + 60;
+                    let attendanceClass = '';
+                    
+                    if (attendanceRate >= 90) {
+                        attendanceClass = 'attendance-high';
+                    } else if (attendanceRate >= 70) {
+                        attendanceClass = 'attendance-medium';
+                    } else {
+                        attendanceClass = 'attendance-low';
+                    }
+                    
+                    // Check if it's a class day (Mon, Wed, Fri)
+                    const dayOfWeek = (day + 3) % 7;
+                    const isClassDay = dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5;
+                    
+                    if (isClassDay) {
+                        dayElement.innerHTML = `
+                            <div class="text-sm font-medium text-gray-700 mb-1">${day}</div>
+                            <div class="text-xs text-gray-600 mb-1">
+                                <i class="fas fa-check-circle text-green-500"></i> ${attendanceRate}%
+                            </div>
+                            <div class="text-xs text-blue-600 cursor-pointer hover:underline">
+                                <i class="fas fa-calendar-check"></i> Session
+                            </div>
+                        `;
+                        dayElement.classList.add(attendanceClass);
+                        
+                        // Add click event to show session details
+                        dayElement.addEventListener('click', function() {
+                            sessionModal.classList.remove('hidden');
+                        });
+                    } else {
+                        dayElement.innerHTML = `
+                            <div class="text-sm font-medium text-gray-700">${day}</div>
+                        `;
+                    }
+                    
+                    grid.appendChild(dayElement);
+                }
+            });
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('attendanceDate').value = today;
+            
+            // Initialize student list with all students marked as present
+            populateStudentList();
+            updateSummary();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Populate calendar
+            populateCalendar();
+        });
+    </script>
+</body>
+</html>

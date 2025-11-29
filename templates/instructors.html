@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructor Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Tab indicator */
+        .tab-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        /* Status badge colors */
+        .status-active {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .status-inactive {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .status-full-time {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .status-part-time {
+            background-color: #8b5cf6;
+            color: white;
+        }
+        
+        .status-contract {
+            background-color: #f59e0b;
+            color: white;
+        }
+        
+        /* Modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Table row hover */
+        .table-row-hover:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* Progress bar animation */
+        @keyframes progress {
+            from { width: 0; }
+        }
+        
+        .progress-bar {
+            animation: progress 1s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md z-10 flex-shrink-0">
+            <div class="p-4 border-b">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-graduation-cap text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-800">EduManage</h1>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-users mr-3"></i>
+                            Students
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-book mr-3"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-dollar-sign mr-3"></i>
+                            Payments
+                        </a>
+                    </li>
+                    <li>
+                        <button id="instructorTab" class="w-full text-left px-4 py-2 rounded-lg bg-blue-50 text-blue-600 flex items-center">
+                            <i class="fas fa-chalkboard-teacher mr-3"></i>
+                            Instructors
+                        </button>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            Reports
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-8 pt-8 border-t">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-cog mr-3"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-question-circle mr-3"></i>
+                                Help & Support
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center flex-1">
+                        <h2 class="text-xl font-semibold text-gray-800">Instructor Management</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">3</span>
+                            </button>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="relative">
+                            <button class="flex items-center text-gray-700 focus:outline-none">
+                                <img src="https://picsum.photos/seed/admin123/40/40.jpg" alt="Profile" class="w-10 h-10 rounded-full mr-2">
+                                <span class="font-medium">Admin User</span>
+                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <!-- Instructor List View -->
+                <div id="instructorListView" class="p-6">
+                    <!-- Filters -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
+                            <button id="toggleFilters" class="text-sm text-blue-600 hover:text-blue-500">
+                                <i class="fas fa-chevron-up mr-1"></i> Hide Filters
+                            </button>
+                        </div>
+                        
+                        <div id="filtersPanel" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
+                                <select id="employmentFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Types</option>
+                                    <option value="full-time">Full Time</option>
+                                    <option value="part-time">Part Time</option>
+                                    <option value="contract">Contract</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                                <select id="specializationFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Specializations</option>
+                                    <option value="math">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="english">English</option>
+                                    <option value="programming">Programming</option>
+                                    <option value="arts">Arts</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                                <div class="relative">
+                                    <input type="text" id="searchFilter" placeholder="Search instructors..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end">
+                            <button id="applyFilters" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Apply Filters
+                            </button>
+                            <button id="resetFilters" class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center space-x-2 mb-3 sm:mb-0">
+                                <button id="addInstructorBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-plus mr-2"></i> Add New Instructor
+                                </button>
+                                <button id="exportListBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <i class="fas fa-download mr-2"></i> Export List
+                                </button>
+                                <button id="importInstructorsBtn" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <i class="fas fa-upload mr-2"></i> Import Instructors
+                                </button>
+                            </div>
+                            
+                            <div class="text-sm text-gray-600">
+                                Showing <span id="showingCount">1-10</span> of <span id="totalCount">15</span> instructors
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- View Options -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <button id="listViewBtn" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-md">
+                                    <i class="fas fa-list mr-1"></i> List View
+                                </button>
+                                <button id="cardViewBtn" class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-md">
+                                    <i class="fas fa-th mr-1"></i> Card View
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <label for="itemsPerPage" class="mr-2 text-sm text-gray-700">Items per page:</label>
+                                <select id="itemsPerPage" class="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-chalkboard-teacher text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Total Instructors</p>
+                                    <p class="text-xl font-bold text-gray-800">15</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user-check text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Active Instructors</p>
+                                    <p class="text-xl font-bold text-gray-800">12</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-dollar-sign text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Average Hourly Rate</p>
+                                    <p class="text-xl font-bold text-gray-800">$45</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- List View (Default) -->
+                    <div id="listView" class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Photo
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Full Name
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Specialization
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Employment Type
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Active Courses
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Hourly Rate
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="instructorTableBody">
+                                    <!-- Table rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Card View -->
+                    <div id="cardView" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="instructorCards">
+                            <!-- Cards will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instructor Detail View -->
+                <div id="instructorDetailView" class="p-6 hidden">
+                    <!-- Header -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <button id="backToInstructorList" class="mr-4 text-blue-600 hover:text-blue-500">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <img src="https://picsum.photos/seed/instructor1/80/80.jpg" alt="Instructor" class="w-20 h-20 rounded-full mr-4">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-800">Dr. John Smith</h2>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                        <span class="ml-2 text-sm text-gray-600">ID: INS-2023-001</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-edit mr-2"></i> Edit
+                                </button>
+                                <div class="relative">
+                                    <button id="moreInstructorActions" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    
+                                    <!-- More Actions Dropdown -->
+                                    <div id="instructorActionsDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-download mr-2"></i> Download Profile
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-envelope mr-2"></i> Send Email
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-file-pdf mr-2"></i> Generate PDF
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-history mr-2"></i> View History
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs Navigation -->
+                    <div class="bg-white rounded-lg shadow mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex -mb-px">
+                                <button class="instructor-tab-btn py-4 px-6 border-b-2 border-blue-500 font-medium text-sm text-blue-600 focus:outline-none" data-tab="overview">
+                                    Overview
+                                </button>
+                                <button class="instructor-tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="courses">
+                                    Courses
+                                </button>
+                                <button class="instructor-tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="payments">
+                                    Payments
+                                </button>
+                                <button class="instructor-tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="documents">
+                                    Documents
+                                </button>
+                                <button class="instructor-tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="performance">
+                                    Performance
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="instructor-tab-content">
+                        <!-- Overview Tab -->
+                        <div id="overview-tab" class="instructor-tab-pane">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                <!-- Personal Information Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Full Name</p>
+                                            <p class="text-sm font-medium text-gray-800">Dr. John Smith</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Date of Birth</p>
+                                            <p class="text-sm font-medium text-gray-800">January 15, 1980 (43 years)</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Gender</p>
+                                            <p class="text-sm font-medium text-gray-800">Male</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Email</p>
+                                            <p class="text-sm font-medium text-gray-800">john.smith@example.com</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Phone</p>
+                                            <p class="text-sm font-medium text-gray-800">+1 (555) 123-4567</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Address</p>
+                                            <p class="text-sm font-medium text-gray-800">123 Main St, Anytown, USA 12345</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Professional Information Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Professional Information</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Employee ID</p>
+                                            <p class="text-sm font-medium text-gray-800">INS-2023-001</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Specialization</p>
+                                            <p class="text-sm font-medium text-gray-800">Mathematics</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Qualifications</p>
+                                            <p class="text-sm font-medium text-gray-800">PhD in Mathematics, Masters in Education</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Experience</p>
+                                            <p class="text-sm font-medium text-gray-800">15 years</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Join Date</p>
+                                            <p class="text-sm font-medium text-gray-800">September 1, 2020</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                <!-- Employment Details Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Employment Details</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Employment Type</p>
+                                            <p class="text-sm font-medium text-gray-800">
+                                                <span class="px-2 py-1 text-xs rounded-full status-full-time">Full Time</span>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Department</p>
+                                            <p class="text-sm font-medium text-gray-800">Mathematics</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Contract End Date</p>
+                                            <p class="text-sm font-medium text-gray-800">-</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Status</p>
+                                            <p class="text-sm font-medium text-gray-800">
+                                                <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Information Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Information</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Hourly Rate</p>
+                                            <p class="text-sm font-medium text-gray-800">$50.00</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Payment Method</p>
+                                            <p class="text-sm font-medium text-gray-800">Bank Transfer</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Tax Rate</p>
+                                            <p class="text-sm font-medium text-gray-800">15%</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Bank Account</p>
+                                            <p class="text-sm font-medium text-gray-800">****-****-****-1234</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Banking Details Card -->
+                            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Banking Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Bank Name</p>
+                                        <p class="text-sm font-medium text-gray-800">First National Bank</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Account Number</p>
+                                        <p class="text-sm font-medium text-gray-800">1234567890</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Routing Number</p>
+                                        <p class="text-sm font-medium text-gray-800">987654321</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Account Type</p>
+                                        <p class="text-sm font-medium text-gray-800">Checking</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Stats -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-book text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Active Courses</p>
+                                            <p class="text-xl font-bold text-gray-800">5</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-users text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total Students</p>
+                                            <p class="text-xl font-bold text-gray-800">125</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-clock text-purple-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Hours This Month</p>
+                                            <p class="text-xl font-bold text-gray-800">160</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-star text-yellow-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Average Rating</p>
+                                            <p class="text-xl font-bold text-gray-800">4.8</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Courses Tab -->
+                        <div id="courses-tab" class="instructor-tab-pane hidden">
+                            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Courses</h3>
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-plus mr-2"></i> Assign to Course
+                                    </button>
+                                </div>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Course Name
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Role
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Schedule
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Students Count
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Hours Taught
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Primary</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Mon, Wed, Fri 10:00 AM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">25</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">72</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Calculus Basics</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Assistant</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Tue, Thu 2:00 PM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">18</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">36</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payments Tab -->
+                        <div id="payments-tab" class="instructor-tab-pane hidden">
+                            <!-- Summary Cards -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-dollar-sign text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total Earned</p>
+                                            <p class="text-xl font-bold text-gray-800">$8,000</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-calendar-alt text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">This Month</p>
+                                            <p class="text-xl font-bold text-gray-800">$2,500</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-clock text-yellow-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Pending Payment</p>
+                                            <p class="text-xl font-bold text-gray-800">$500</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment History Table -->
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment History</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Period
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Total Hours
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Hourly Rate
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Gross Amount
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Tax
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Net Amount
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">October 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">160</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$50.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$8,000.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$1,200.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$6,800.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500">
+                                                        <i class="fas fa-print"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">150</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$50.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$7,500.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$1,125.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$6,375.00</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500">
+                                                        <i class="fas fa-print"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Documents Tab -->
+                        <div id="documents-tab" class="instructor-tab-pane hidden">
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Documents</h3>
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-upload mr-2"></i> Upload New Document
+                                    </button>
+                                </div>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Document Type
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Title
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Upload Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Verified Status
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Expiry Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Resume</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">John Smith Resume</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 1, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Verified</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Teaching Certificate</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics Teaching Certificate</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">August 15, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Verified</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">August 15, 2025</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Tab -->
+                        <div id="performance-tab" class="instructor-tab-pane hidden">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                <!-- Teaching Hours Trend -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Teaching Hours Trend</h3>
+                                    <div class="h-64">
+                                        <canvas id="teachingHoursChart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <!-- Student Feedback -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Student Feedback</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Overall Rating</span>
+                                                <span class="font-medium text-gray-800">4.8/5.0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 96%"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Teaching Quality</span>
+                                                <span class="font-medium text-gray-800">4.9/5.0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 98%"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Knowledge Transfer</span>
+                                                <span class="font-medium text-gray-800">4.7/5.0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 94%"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-600">Student Engagement</span>
+                                                <span class="font-medium text-gray-800">4.6/5.0</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Course Success Rates -->
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Course Success Rates</h3>
+                                <div class="h-64">
+                                    <canvas id="courseSuccessChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instructor Create/Edit Form -->
+                <div id="instructorFormView" class="p-6 hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">Add New Instructor</h2>
+                            <button id="cancelInstructorForm" class="text-gray-600 hover:text-gray-800">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <form id="instructorForm">
+                            <!-- Personal Information Section -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                        <input type="text" id="fullName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                        <input type="date" id="dob" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                        <select id="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Select Gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                        <input type="tel" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                        <input type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Professional Information Section -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Professional Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+                                        <input type="text" id="employeeId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                                        <select id="specialization" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Select Specialization</option>
+                                            <option value="math">Mathematics</option>
+                                            <option value="science">Science</option>
+                                            <option value="english">English</option>
+                                            <option value="programming">Programming</option>
+                                            <option value="arts">Arts</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Qualifications</label>
+                                        <textarea id="qualifications" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Experience (years)</label>
+                                        <input type="number" id="experience" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Employment Details Section -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Employment Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Employment Type *</label>
+                                        <select id="employmentType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                            <option value="">Select Type</option>
+                                            <option value="full-time">Full Time</option>
+                                            <option value="part-time">Part Time</option>
+                                            <option value="contract">Contract</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                                        <select id="department" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Select Department</option>
+                                            <option value="math">Mathematics</option>
+                                            <option value="science">Science</option>
+                                            <option value="english">English</option>
+                                            <option value="programming">Programming</option>
+                                            <option value="arts">Arts</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Join Date</label>
+                                        <input type="date" id="joinDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Contract End Date</label>
+                                        <input type="date" id="contractEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment Information Section -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate *</label>
+                                        <input type="number" id="hourlyRate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required min="0" step="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tax Rate Percentage *</label>
+                                        <input type="number" id="taxRate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required min="0" max="100" step="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                        <select id="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Select Method</option>
+                                            <option value="bank">Bank Transfer</option>
+                                            <option value="check">Check</option>
+                                            <option value="cash">Cash</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Banking Details Section -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Banking Details (optional)</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                                        <input type="text" id="bankName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                                        <input type="text" id="accountNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Routing Number</label>
+                                        <input type="text" id="routingNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                                        <select id="accountType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Select Type</option>
+                                            <option value="checking">Checking</option>
+                                            <option value="savings">Savings</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" id="cancelFormBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    Cancel
+                                </button>
+                                <button type="submit" id="saveInstructorBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        // Sample instructor data
+        const instructors = [
+            {
+                id: 1,
+                name: "Dr. John Smith",
+                photo: "https://picsum.photos/seed/instructor1/40/40.jpg",
+                specialization: "Mathematics",
+                employmentType: "Full Time",
+                activeCourses: 5,
+                hourlyRate: 50,
+                status: "active"
+            },
+            {
+                id: 2,
+                name: "Prof. Sarah Johnson",
+                photo: "https://picsum.photos/seed/instructor2/40/40.jpg",
+                specialization: "Science",
+                employmentType: "Full Time",
+                activeCourses: 3,
+                hourlyRate: 45,
+                status: "active"
+            },
+            {
+                id: 3,
+                name: "Ms. Emily Davis",
+                photo: "https://picsum.photos/seed/instructor3/40/40.jpg",
+                specialization: "English",
+                employmentType: "Part Time",
+                activeCourses: 2,
+                hourlyRate: 40,
+                status: "active"
+            },
+            {
+                id: 4,
+                name: "Mr. Robert Wilson",
+                photo: "https://picsum.photos/seed/instructor4/40/40.jpg",
+                specialization: "Programming",
+                employmentType: "Contract",
+                activeCourses: 4,
+                hourlyRate: 55,
+                status: "active"
+            },
+            {
+                id: 5,
+                name: "Dr. Lisa Anderson",
+                photo: "https://picsum.photos/seed/instructor5/40/40.jpg",
+                specialization: "Arts",
+                employmentType: "Full Time",
+                activeCourses: 2,
+                hourlyRate: 42,
+                status: "inactive"
+            },
+            {
+                id: 6,
+                name: "Prof. Michael Brown",
+                photo: "https://picsum.photos/seed/instructor6/40/40.jpg",
+                specialization: "Mathematics",
+                employmentType: "Full Time",
+                activeCourses: 4,
+                hourlyRate: 48,
+                status: "active"
+            },
+            {
+                id: 7,
+                name: "Ms. Jessica Taylor",
+                photo: "https://picsum.photos/seed/instructor7/40/40.jpg",
+                specialization: "Science",
+                employmentType: "Part Time",
+                activeCourses: 3,
+                hourlyRate: 38,
+                status: "active"
+            },
+            {
+                id: 8,
+                name: "Dr. Christopher Martinez",
+                photo: "https://picsum.photos/seed/instructor8/40/40.jpg",
+                specialization: "English",
+                employmentType: "Full Time",
+                activeCourses: 3,
+                hourlyRate: 46,
+                status: "active"
+            },
+            {
+                id: 9,
+                name: "Ms. Amanda Thomas",
+                photo: "https://picsum.photos/seed/instructor9/40/40.jpg",
+                specialization: "Programming",
+                employmentType: "Contract",
+                activeCourses: 2,
+                hourlyRate: 52,
+                status: "active"
+            },
+            {
+                id: 10,
+                name: "Dr. James Jackson",
+                photo: "https://picsum.photos/seed/instructor10/40/40.jpg",
+                specialization: "Arts",
+                employmentType: "Full Time",
+                activeCourses: 3,
+                hourlyRate: 44,
+                status: "active"
+            }
+        ];
+        
+        // DOM Elements
+        const instructorListView = document.getElementById('instructorListView');
+        const instructorDetailView = document.getElementById('instructorDetailView');
+        const instructorFormView = document.getElementById('instructorFormView');
+        const instructorTableBody = document.getElementById('instructorTableBody');
+        const instructorCards = document.getElementById('instructorCards');
+        
+        // View switching
+        function showInstructorList() {
+            instructorListView.classList.remove('hidden');
+            instructorDetailView.classList.add('hidden');
+            instructorFormView.classList.add('hidden');
+        }
+        
+        function showInstructorDetail() {
+            instructorListView.classList.add('hidden');
+            instructorDetailView.classList.remove('hidden');
+            instructorFormView.classList.add('hidden');
+        }
+        
+        function showInstructorForm() {
+            instructorListView.classList.add('hidden');
+            instructorDetailView.classList.add('hidden');
+            instructorFormView.classList.remove('hidden');
+        }
+        
+        // Event listeners for view switching
+        document.getElementById('addInstructorBtn').addEventListener('click', showInstructorForm);
+        document.getElementById('backToInstructorList').addEventListener('click', showInstructorList);
+        document.getElementById('cancelInstructorForm').addEventListener('click', showInstructorList);
+        document.getElementById('cancelFormBtn').addEventListener('click', showInstructorList);
+        
+        // View mode switching
+        document.getElementById('listViewBtn').addEventListener('click', function() {
+            document.getElementById('listView').classList.remove('hidden');
+            document.getElementById('cardView').classList.add('hidden');
+            
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('cardViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('cardViewBtn').classList.add('text-gray-600');
+        });
+        
+        document.getElementById('cardViewBtn').addEventListener('click', function() {
+            document.getElementById('listView').classList.add('hidden');
+            document.getElementById('cardView').classList.remove('hidden');
+            
+            this.classList.add('bg-blue-100', 'text-blue-600');
+            this.classList.remove('text-gray-600');
+            document.getElementById('listViewBtn').classList.remove('bg-blue-100', 'text-blue-600');
+            document.getElementById('listViewBtn').classList.add('text-gray-600');
+        });
+        
+        // Tab switching in instructor detail view
+        const instructorTabButtons = document.querySelectorAll('.instructor-tab-btn');
+        const instructorTabPanes = document.querySelectorAll('.instructor-tab-pane');
+        
+        instructorTabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Update button styles
+                instructorTabButtons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                this.classList.remove('border-transparent', 'text-gray-500');
+                this.classList.add('border-blue-500', 'text-blue-600');
+                
+                // Show corresponding tab
+                instructorTabPanes.forEach(pane => {
+                    pane.classList.add('hidden');
+                });
+                
+                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            });
+        });
+        
+        // Populate instructor table
+        function populateInstructorTable() {
+            instructorTableBody.innerHTML = '';
+            
+            instructors.forEach(instructor => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-hover';
+                
+                // Determine status badge class
+                let statusClass = '';
+                switch(instructor.status) {
+                    case 'active': statusClass = 'status-active'; break;
+                    case 'inactive': statusClass = 'status-inactive'; break;
+                }
+                
+                // Determine employment type badge class
+                let employmentClass = '';
+                switch(instructor.employmentType) {
+                    case 'Full Time': employmentClass = 'status-full-time'; break;
+                    case 'Part Time': employmentClass = 'status-part-time'; break;
+                    case 'Contract': employmentClass = 'status-contract'; break;
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <img src="${instructor.photo}" alt="${instructor.name}" class="w-10 h-10 rounded-full">
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <a href="#" class="instructor-detail-link" data-id="${instructor.id}">${instructor.name}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${instructor.specialization}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <span class="px-2 py-1 text-xs rounded-full ${employmentClass}">${instructor.employmentType}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${instructor.activeCourses}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">$${instructor.hourlyRate}/hr</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${instructor.status.charAt(0).toUpperCase() + instructor.status.slice(1)}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <button class="text-blue-600 hover:text-blue-500 mr-2 view-instructor" data-id="${instructor.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="text-green-600 hover:text-green-500 mr-2 edit-instructor" data-id="${instructor.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-500 delete-instructor" data-id="${instructor.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                instructorTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.instructor-detail-link, .view-instructor').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showInstructorDetail();
+                });
+            });
+            
+            document.querySelectorAll('.edit-instructor').forEach(button => {
+                button.addEventListener('click', function() {
+                    showInstructorForm();
+                });
+            });
+        }
+        
+        // Populate instructor cards
+        function populateInstructorCards() {
+            instructorCards.innerHTML = '';
+            
+            instructors.forEach(instructor => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow overflow-hidden card-hover';
+                
+                // Determine status badge class
+                let statusClass = '';
+                switch(instructor.status) {
+                    case 'active': statusClass = 'status-active'; break;
+                    case 'inactive': statusClass = 'status-inactive'; break;
+                }
+                
+                // Determine employment type badge class
+                let employmentClass = '';
+                switch(instructor.employmentType) {
+                    case 'Full Time': employmentClass = 'status-full-time'; break;
+                    case 'Part Time': employmentClass = 'status-part-time'; break;
+                    case 'Contract': employmentClass = 'status-contract'; break;
+                }
+                
+                card.innerHTML = `
+                    <img src="${instructor.photo}" alt="${instructor.name}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-1">${instructor.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2">${instructor.specialization}</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2 py-1 text-xs rounded-full ${employmentClass}">${instructor.employmentType}</span>
+                            <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${instructor.status.charAt(0).toUpperCase() + instructor.status.slice(1)}</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm text-gray-600">Active Courses</span>
+                            <span class="text-sm font-medium text-gray-800">${instructor.activeCourses}</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm text-gray-600">Hourly Rate</span>
+                            <span class="text-sm font-medium text-gray-800">$${instructor.hourlyRate}/hr</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 view-instructor" data-id="${instructor.id}">
+                                <i class="fas fa-eye mr-1"></i> View
+                            </button>
+                            <button class="flex-1 px-3 py-1 bg-gray-200 text-gray-800 text-sm rounded hover:bg-gray-300 edit-instructor" data-id="${instructor.id}">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                instructorCards.appendChild(card);
+            });
+            
+            // Add event listeners to card buttons
+            document.querySelectorAll('.view-instructor').forEach(button => {
+                button.addEventListener('click', function() {
+                    showInstructorDetail();
+                });
+            });
+            
+            document.querySelectorAll('.edit-instructor').forEach(button => {
+                button.addEventListener('click', function() {
+                    showInstructorForm();
+                });
+            });
+        }
+        
+        // Toggle filters panel
+        document.getElementById('toggleFilters').addEventListener('click', function() {
+            const filtersPanel = document.getElementById('filtersPanel');
+            const icon = this.querySelector('i');
+            
+            if (filtersPanel.classList.contains('hidden')) {
+                filtersPanel.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                this.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Hide Filters';
+            } else {
+                filtersPanel.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                this.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Show Filters';
+            }
+        });
+        
+        // More actions dropdown
+        document.getElementById('moreInstructorActions').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('instructorActionsDropdown').classList.toggle('hidden');
+        });
+        
+        document.addEventListener('click', function() {
+            document.getElementById('instructorActionsDropdown').classList.add('hidden');
+        });
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Teaching Hours Trend Chart
+            const teachingHoursCtx = document.getElementById('teachingHoursChart');
+            if (teachingHoursCtx) {
+                new Chart(teachingHoursCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Teaching Hours',
+                            data: [140, 155, 145, 160, 165, 160],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Course Success Rates Chart
+            const courseSuccessCtx = document.getElementById('courseSuccessChart');
+            if (courseSuccessCtx) {
+                new Chart(courseSuccessCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Advanced Mathematics', 'Calculus Basics', 'Statistics', 'Algebra'],
+                        datasets: [{
+                            label: 'Success Rate',
+                            data: [95, 88, 92, 85],
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(139, 92, 246, 0.8)',
+                                'rgba(245, 158, 11, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(16, 185, 129)',
+                                'rgb(59, 130, 246)',
+                                'rgb(139, 92, 246)',
+                                'rgb(245, 158, 11)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 70,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Form submission
+        document.getElementById('instructorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Instructor saved successfully!');
+            showInstructorList();
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            populateInstructorTable();
+            populateInstructorCards();
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>

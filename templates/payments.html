@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Tab indicator */
+        .tab-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        /* Status badge colors */
+        .status-pending {
+            background-color: #f59e0b;
+            color: white;
+        }
+        
+        .status-paid {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .status-overdue {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .status-partial {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .status-draft {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .status-sent {
+            background-color: #8b5cf6;
+            color: white;
+        }
+        
+        /* Modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Table row hover */
+        .table-row-hover:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* Payment method icons */
+        .payment-method-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .method-cash { background-color: #10b981; color: white; }
+        .method-bank { background-color: #3b82f6; color: white; }
+        .method-check { background-color: #f59e0b; color: white; }
+        .method-card { background-color: #8b5cf6; color: white; }
+        .method-mobile { background-color: #ec4899; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md z-10 flex-shrink-0">
+            <div class="p-4 border-b">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-graduation-cap text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-800">EduManage</h1>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-users mr-3"></i>
+                            Students
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-book mr-3"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li>
+                        <button id="paymentTab" class="w-full text-left px-4 py-2 rounded-lg bg-blue-50 text-blue-600 flex items-center">
+                            <i class="fas fa-dollar-sign mr-3"></i>
+                            Payments
+                        </button>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            Reports
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-8 pt-8 border-t">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-cog mr-3"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-question-circle mr-3"></i>
+                                Help & Support
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center flex-1">
+                        <h2 class="text-xl font-semibold text-gray-800">Payment Management</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">3</span>
+                            </button>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="relative">
+                            <button class="flex items-center text-gray-700 focus:outline-none">
+                                <img src="https://picsum.photos/seed/admin123/40/40.jpg" alt="Profile" class="w-10 h-10 rounded-full mr-2">
+                                <span class="font-medium">Admin User</span>
+                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <!-- Payment List View -->
+                <div id="paymentListView" class="p-6">
+                    <!-- Filters Panel -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
+                            <button id="toggleFilters" class="text-sm text-blue-600 hover:text-blue-500">
+                                <i class="fas fa-chevron-up mr-1"></i> Hide Filters
+                            </button>
+                        </div>
+                        
+                        <div id="filtersPanel" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="overdue">Overdue</option>
+                                    <option value="partial">Partially Paid</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                <select id="methodFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Methods</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="bank">Bank Transfer</option>
+                                    <option value="check">Check</option>
+                                    <option value="card">Credit Card</option>
+                                    <option value="mobile">Mobile Payment</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                                <div class="flex space-x-2">
+                                    <input type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                                <select id="courseFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Courses</option>
+                                    <option value="math">Advanced Mathematics</option>
+                                    <option value="physics">Physics 101</option>
+                                    <option value="english">English Literature</option>
+                                    <option value="webdev">Web Development</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Student Search</label>
+                                <div class="relative">
+                                    <input type="text" placeholder="Search students..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Amount Range</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" placeholder="Min" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="number" placeholder="Max" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end">
+                            <button id="applyFilters" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Apply Filters
+                            </button>
+                            <button id="resetFilters" class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions Bar -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center space-x-2 mb-3 sm:mb-0">
+                                <button id="recordPaymentBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-plus mr-2"></i> Record New Payment
+                                </button>
+                                <button id="createInvoiceBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <i class="fas fa-file-invoice mr-2"></i> Create Invoice
+                                </button>
+                                <button id="exportListBtn" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <i class="fas fa-download mr-2"></i> Export List
+                                </button>
+                                <button id="sendRemindersBtn" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                    <i class="fas fa-envelope mr-2"></i> Send Payment Reminders
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-dollar-sign text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Total Collected (This Month)</p>
+                                    <p class="text-xl font-bold text-gray-800">$12,450</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-clock text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Pending Amount</p>
+                                    <p class="text-xl font-bold text-gray-800">$3,250</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Overdue Amount</p>
+                                    <p class="text-xl font-bold text-gray-800">$1,850</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-4 card-hover">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-chart-line text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Expected (This Month)</p>
+                                    <p class="text-xl font-bold text-gray-800">$15,000</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Table -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Student Name
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Course
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Amount
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Amount Paid
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Balance
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Due Date
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Payment Method
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Receipt Number
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="paymentTableBody">
+                                    <!-- Table rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Overdue Alerts Panel -->
+                    <div class="bg-white rounded-lg shadow p-4 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Overdue Payments</h3>
+                        <div class="space-y-3" id="overdueAlerts">
+                            <!-- Overdue alerts will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Payments by Method</h3>
+                            <div class="h-64">
+                                <canvas id="paymentMethodChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Collection Trend</h3>
+                            <div class="h-64">
+                                <canvas id="collectionTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Record Payment Modal -->
+    <div id="recordPaymentModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity modal-backdrop" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full fade-in">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Record Payment
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white px-4 pb-4 sm:p-6">
+                    <!-- Student & Course Selection -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-4">Student & Course Selection</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Student Search/Select *</label>
+                                <div class="relative">
+                                    <input type="text" id="studentSearch" placeholder="Search or select student..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Course Select *</label>
+                                <select id="courseSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Course</option>
+                                    <option value="math">Advanced Mathematics</option>
+                                    <option value="physics">Physics 101</option>
+                                    <option value="english">English Literature</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Outstanding Balance:</span>
+                                <span class="text-lg font-bold text-gray-800" id="outstandingBalance">$450.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Details -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-4">Payment Details</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+                                <input type="date" id="paymentDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Amount to Pay *</label>
+                                <input type="number" id="amountToPay" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
+                                <select id="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Method</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="bank">Bank Transfer</option>
+                                    <option value="check">Check</option>
+                                    <option value="card">Credit Card</option>
+                                    <option value="mobile">Mobile Payment</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Reference</label>
+                                <input type="text" id="transactionRef" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="If applicable">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea id="paymentNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Amount Calculation -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-4">Amount Calculation</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Amount Due</label>
+                                <input type="text" id="totalAmountDue" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" value="$450.00" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Amount Paying</label>
+                                <input type="text" id="amountPaying" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" value="$0.00" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Remaining Balance</label>
+                                <input type="text" id="remainingBalance" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" value="$450.00" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Auto-generate Receipt Option -->
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="autoGenerateReceipt" class="mr-2" checked>
+                            <span class="text-sm text-gray-700">Auto-generate receipt after payment</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="recordAndPrintBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Record & Print Receipt
+                    </button>
+                    <button type="button" id="recordPaymentBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Record Payment
+                    </button>
+                    <button type="button" id="cancelPaymentBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample payment data
+        const payments = [
+            {
+                id: 1,
+                studentName: "John Doe",
+                course: "Advanced Mathematics",
+                amount: 450,
+                amountPaid: 450,
+                balance: 0,
+                dueDate: "2023-11-15",
+                status: "paid",
+                paymentMethod: "bank",
+                receiptNumber: "R-2023-1101",
+                overdueDays: 0
+            },
+            {
+                id: 2,
+                studentName: "Jane Smith",
+                course: "Physics 101",
+                amount: 380,
+                amountPaid: 200,
+                balance: 180,
+                dueDate: "2023-11-10",
+                status: "partial",
+                paymentMethod: "cash",
+                receiptNumber: "R-2023-1095",
+                overdueDays: 5
+            },
+            {
+                id: 3,
+                studentName: "Michael Johnson",
+                course: "English Literature",
+                amount: 350,
+                amountPaid: 0,
+                balance: 350,
+                dueDate: "2023-11-05",
+                status: "overdue",
+                paymentMethod: null,
+                receiptNumber: null,
+                overdueDays: 15
+            },
+            {
+                id: 4,
+                studentName: "Emily Davis",
+                course: "Web Development",
+                amount: 500,
+                amountPaid: 0,
+                balance: 500,
+                dueDate: "2023-11-20",
+                status: "pending",
+                paymentMethod: null,
+                receiptNumber: null,
+                overdueDays: 0
+            },
+            {
+                id: 5,
+                studentName: "Robert Wilson",
+                course: "Advanced Mathematics",
+                amount: 450,
+                amountPaid: 450,
+                balance: 0,
+                dueDate: "2023-11-01",
+                status: "paid",
+                paymentMethod: "card",
+                receiptNumber: "R-2023-1080",
+                overdueDays: 0
+            },
+            {
+                id: 6,
+                studentName: "Sarah Brown",
+                course: "Physics 101",
+                amount: 380,
+                amountPaid: 0,
+                balance: 380,
+                dueDate: "2023-10-25",
+                status: "overdue",
+                paymentMethod: null,
+                receiptNumber: null,
+                overdueDays: 25
+            }
+        ];
+        
+        // DOM Elements
+        const paymentTableBody = document.getElementById('paymentTableBody');
+        const recordPaymentModal = document.getElementById('recordPaymentModal');
+        
+        // Populate payment table
+        function populatePaymentTable() {
+            paymentTableBody.innerHTML = '';
+            
+            payments.forEach(payment => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-hover';
+                
+                // Determine status badge class
+                let statusClass = '';
+                switch(payment.status) {
+                    case 'pending': statusClass = 'status-pending'; break;
+                    case 'paid': statusClass = 'status-paid'; break;
+                    case 'overdue': statusClass = 'status-overdue'; break;
+                    case 'partial': statusClass = 'status-partial'; break;
+                }
+                
+                // Determine payment method icon
+                let methodIcon = '';
+                if (payment.paymentMethod) {
+                    methodIcon = `<span class="payment-method-icon method-${payment.paymentMethod}">
+                        <i class="fas fa-${getPaymentMethodIcon(payment.paymentMethod)}"></i>
+                    </span>`;
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-800">${payment.studentName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${payment.course}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">$${payment.amount.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">$${payment.amountPaid.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">$${payment.balance.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${formatDate(payment.dueDate)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${methodIcon}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${payment.receiptNumber || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <div class="flex space-x-1">
+                            <button class="text-blue-600 hover:text-blue-500" onclick="recordPayment(${payment.id})" title="Record Payment">
+                                <i class="fas fa-dollar-sign"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-500" onclick="viewDetails(${payment.id})" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-yellow-600 hover:text-yellow-500" onclick="sendReminder(${payment.id})" title="Send Reminder">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            <button class="text-purple-600 hover:text-purple-500" onclick="printReceipt(${payment.id})" title="Print Receipt">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-500" onclick="cancelPayment(${payment.id})" title="Cancel Payment">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                paymentTableBody.appendChild(row);
+            });
+        }
+        
+        // Populate overdue alerts
+        function populateOverdueAlerts() {
+            const overdueAlerts = document.getElementById('overdueAlerts');
+            const overduePayments = payments.filter(p => p.status === 'overdue');
+            
+            if (overduePayments.length === 0) {
+                overdueAlerts.innerHTML = '<p class="text-sm text-gray-600">No overdue payments found.</p>';
+                return;
+            }
+            
+            overdueAlerts.innerHTML = '';
+            overduePayments.forEach(payment => {
+                const alert = document.createElement('div');
+                alert.className = 'flex items-center p-3 bg-red-50 rounded-lg';
+                alert.innerHTML = `
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-600"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800">
+                            <span class="font-medium">${payment.studentName}</span> - ${payment.course}
+                        </p>
+                        <p class="text-xs text-gray-600">
+                            $${payment.balance.toFixed(2)} overdue by ${payment.overdueDays} days
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button class="text-blue-600 hover:text-blue-500 text-sm">
+                            Send Reminder
+                        </button>
+                    </div>
+                `;
+                overdueAlerts.appendChild(alert);
+            });
+        }
+        
+        // Get payment method icon
+        function getPaymentMethodIcon(method) {
+            const icons = {
+                cash: 'money-bill-wave',
+                bank: 'university',
+                check: 'money-check',
+                card: 'credit-card',
+                mobile: 'mobile-alt'
+            };
+            return icons[method] || 'question';
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Payment action functions
+        function recordPayment(paymentId) {
+            recordPaymentModal.classList.remove('hidden');
+        }
+        
+        function viewDetails(paymentId) {
+            alert('View payment details for payment ID: ' + paymentId);
+        }
+        
+        function sendReminder(paymentId) {
+            alert('Send reminder for payment ID: ' + paymentId);
+        }
+        
+        function printReceipt(paymentId) {
+            alert('Print receipt for payment ID: ' + paymentId);
+        }
+        
+        function cancelPayment(paymentId) {
+            if (confirm('Are you sure you want to cancel this payment?')) {
+                alert('Payment cancelled for ID: ' + paymentId);
+            }
+        }
+        
+        // Modal event listeners
+        document.getElementById('recordPaymentBtn').addEventListener('click', function() {
+            recordPaymentModal.classList.remove('hidden');
+        });
+        
+        document.getElementById('cancelPaymentBtn').addEventListener('click', function() {
+            recordPaymentModal.classList.add('hidden');
+        });
+        
+        // Calculate amounts in payment modal
+        document.getElementById('amountToPay').addEventListener('input', function() {
+            const totalDue = 450;
+            const amountPaying = parseFloat(this.value) || 0;
+            const remaining = totalDue - amountPaying;
+            
+            document.getElementById('amountPaying').value = '$' + amountPaying.toFixed(2);
+            document.getElementById('remainingBalance').value = '$' + Math.max(0, remaining).toFixed(2);
+        });
+        
+        // Toggle filters panel
+        document.getElementById('toggleFilters').addEventListener('click', function() {
+            const filtersPanel = document.getElementById('filtersPanel');
+            const icon = this.querySelector('i');
+            
+            if (filtersPanel.classList.contains('hidden')) {
+                filtersPanel.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                this.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Hide Filters';
+            } else {
+                filtersPanel.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                this.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Show Filters';
+            }
+        });
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Payment Method Chart
+            const methodCtx = document.getElementById('paymentMethodChart');
+            if (methodCtx) {
+                new Chart(methodCtx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Bank Transfer', 'Cash', 'Credit Card', 'Mobile'],
+                        datasets: [{
+                            data: [35, 25, 30, 10],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(139, 92, 246, 0.8)',
+                                'rgba(236, 72, 153, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(59, 130, 246)',
+                                'rgb(16, 185, 129)',
+                                'rgb(139, 92, 246)',
+                                'rgb(236, 72, 153)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Collection Trend Chart
+            const trendCtx = document.getElementById('collectionTrendChart');
+            if (trendCtx) {
+                new Chart(trendCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Collections',
+                            data: [12000, 13500, 11800, 14200, 15600, 12450],
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            populatePaymentTable();
+            populateOverdueAlerts();
+            initializeCharts();
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = today;
+        });
+    </script>
+</body>
+</html>

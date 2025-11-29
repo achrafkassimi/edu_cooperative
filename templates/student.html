@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Animation for cards */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* Tab indicator */
+        .tab-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        /* Checkbox styling */
+        .custom-checkbox {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .custom-checkbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        /* Status badge colors */
+        .status-active {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .status-inactive {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .status-graduated {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .status-suspended {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        /* Table row hover */
+        .table-row-hover:hover {
+            background-color: #f9fafb;
+        }
+        
+        /* Modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md z-10 flex-shrink-0">
+            <div class="p-4 border-b">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-graduation-cap text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-800">EduManage</h1>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <button id="studentListTab" class="w-full text-left px-4 py-2 rounded-lg bg-blue-50 text-blue-600 flex items-center">
+                            <i class="fas fa-users mr-3"></i>
+                            Students
+                        </button>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-book mr-3"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-dollar-sign mr-3"></i>
+                            Payments
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                            <i class="fas fa-chart-bar mr-3"></i>
+                            Reports
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-8 pt-8 border-t">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-cog mr-3"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 text-gray-700 flex items-center">
+                                <i class="fas fa-question-circle mr-3"></i>
+                                Help & Support
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center flex-1">
+                        <h2 class="text-xl font-semibold text-gray-800">Student Management</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">3</span>
+                            </button>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="relative">
+                            <button class="flex items-center text-gray-700 focus:outline-none">
+                                <img src="https://picsum.photos/seed/admin123/40/40.jpg" alt="Profile" class="w-10 h-10 rounded-full mr-2">
+                                <span class="font-medium">Admin User</span>
+                                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <!-- Student List View -->
+                <div id="studentListView" class="p-6">
+                    <!-- Filters Panel -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
+                            <button id="toggleFilters" class="text-sm text-blue-600 hover:text-blue-500">
+                                <i class="fas fa-chevron-up mr-1"></i> Hide Filters
+                            </button>
+                        </div>
+                        
+                        <div id="filtersPanel" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="graduated">Graduated</option>
+                                    <option value="suspended">Suspended</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Education Level</label>
+                                <select id="educationFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Levels</option>
+                                    <option value="elementary">Elementary</option>
+                                    <option value="middle">Middle School</option>
+                                    <option value="high">High School</option>
+                                    <option value="college">College</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                <select id="genderFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Genders</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
+                                <input type="date" id="regDateFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                                <div class="relative">
+                                    <input type="text" id="searchFilter" placeholder="Name/Phone/Email" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end">
+                            <button id="applyFilters" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Apply Filters
+                            </button>
+                            <button id="resetFilters" class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions Bar -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center space-x-2 mb-3 sm:mb-0">
+                                <button id="addStudentBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-plus mr-2"></i> Add New Student
+                                </button>
+                                
+                                <div class="relative">
+                                    <button id="exportBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <i class="fas fa-download mr-2"></i> Export
+                                    </button>
+                                    
+                                    <!-- Export Dropdown -->
+                                    <div id="exportDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-file-excel mr-2"></i> Export to Excel
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-file-csv mr-2"></i> Export to CSV
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <button id="bulkActionsBtn" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <i class="fas fa-tasks mr-2"></i> Bulk Actions
+                                    </button>
+                                    
+                                    <!-- Bulk Actions Dropdown -->
+                                    <div id="bulkActionsDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-bell mr-2"></i> Send Notification
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-exchange-alt mr-2"></i> Change Status
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-download mr-2"></i> Export Selected
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-trash mr-2"></i> Delete Selected
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <button id="importBtn" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                    <i class="fas fa-upload mr-2"></i> Import Students
+                                </button>
+                            </div>
+                            
+                            <div class="text-sm text-gray-600">
+                                Showing <span id="showingCount">1-10</span> of <span id="totalCount">50</span> students
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Table -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left">
+                                            <input type="checkbox" id="selectAll" class="custom-checkbox">
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Photo
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" id="sortByName">
+                                            Full Name <i class="fas fa-sort text-gray-400"></i>
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Parent Name
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Parent Phone
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Education Level
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Active Courses
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" id="sortByDate">
+                                            Registration Date <i class="fas fa-sort text-gray-400"></i>
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="studentTableBody">
+                                    <!-- Table rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="px-4 py-3 bg-gray-50 flex items-center justify-between">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Previous </a>
+                                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Next </a>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Page <span class="font-medium">1</span> of <span class="font-medium">5</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Previous</span>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                        <a href="#" aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">2</a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">3</a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">4</a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">5</a>
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Next</span>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </nav>
+                                </div>
+                                <div class="ml-4 flex items-center">
+                                    <label for="itemsPerPage" class="mr-2 text-sm text-gray-700">Items per page:</label>
+                                    <select id="itemsPerPage" class="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Student Detail View -->
+                <div id="studentDetailView" class="p-6 hidden">
+                    <!-- Header -->
+                    <div class="bg-white rounded-lg shadow mb-6 p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <button id="backToList" class="mr-4 text-blue-600 hover:text-blue-500">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <img src="https://picsum.photos/seed/student123/80/80.jpg" alt="Student" class="w-20 h-20 rounded-full mr-4">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-800">John Doe</h2>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                        <span class="ml-2 text-sm text-gray-600">ID: STU-2023-001</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-edit mr-2"></i> Edit
+                                </button>
+                                <button class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <i class="fas fa-trash mr-2"></i> Delete
+                                </button>
+                                <div class="relative">
+                                    <button id="moreActionsBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    
+                                    <!-- More Actions Dropdown -->
+                                    <div id="moreActionsDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-print mr-2"></i> Print Profile
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-envelope mr-2"></i> Send Email
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-file-pdf mr-2"></i> Generate PDF
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <i class="fas fa-history mr-2"></i> View History
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs Navigation -->
+                    <div class="bg-white rounded-lg shadow mb-6">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex -mb-px">
+                                <button class="tab-btn py-4 px-6 border-b-2 border-blue-500 font-medium text-sm text-blue-600 focus:outline-none" data-tab="overview">
+                                    Overview
+                                </button>
+                                <button class="tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="enrollments">
+                                    Enrollments
+                                </button>
+                                <button class="tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="payments">
+                                    Payments
+                                </button>
+                                <button class="tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="attendance">
+                                    Attendance
+                                </button>
+                                <button class="tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="documents">
+                                    Documents
+                                </button>
+                                <button class="tab-btn py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="activity">
+                                    Activity Log
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Overview Tab -->
+                        <div id="overview-tab" class="tab-pane">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Personal Information Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Full Name</p>
+                                            <p class="text-sm font-medium text-gray-800">John Doe</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Date of Birth</p>
+                                            <p class="text-sm font-medium text-gray-800">January 15, 2005 (18 years)</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Gender</p>
+                                            <p class="text-sm font-medium text-gray-800">Male</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Email</p>
+                                            <p class="text-sm font-medium text-gray-800">john.doe@example.com</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Phone</p>
+                                            <p class="text-sm font-medium text-gray-800">+1 (555) 123-4567</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Address</p>
+                                            <p class="text-sm font-medium text-gray-800">123 Main St, Anytown, USA 12345</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Parent/Guardian Information Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Parent/Guardian Information</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Parent Name</p>
+                                            <p class="text-sm font-medium text-gray-800">Jane Doe</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Parent Phone</p>
+                                            <p class="text-sm font-medium text-gray-800">+1 (555) 987-6543</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Parent Email</p>
+                                            <p class="text-sm font-medium text-gray-800">jane.doe@example.com</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Emergency Contact</p>
+                                            <p class="text-sm font-medium text-gray-800">+1 (555) 555-5555</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Academic Information Card -->
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Academic Information</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Education Level</p>
+                                            <p class="text-sm font-medium text-gray-800">High School</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">School Name</p>
+                                            <p class="text-sm font-medium text-gray-800">Anytown High School</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Registration Date</p>
+                                            <p class="text-sm font-medium text-gray-800">September 1, 2022</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Status</p>
+                                            <p class="text-sm font-medium text-gray-800">
+                                                <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Stats -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-book text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Active Enrollments</p>
+                                            <p class="text-xl font-bold text-gray-800">5</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-dollar-sign text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total Payments Made</p>
+                                            <p class="text-xl font-bold text-gray-800">$2,450</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-user-check text-purple-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Overall Attendance Rate</p>
+                                            <p class="text-xl font-bold text-gray-800">92.5%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-exclamation-circle text-red-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Outstanding Balance</p>
+                                            <p class="text-xl font-bold text-gray-800">$350</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Medical Notes -->
+                            <div class="bg-white rounded-lg shadow p-4 mt-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Medical Notes</h3>
+                                <p class="text-sm text-gray-600">No known allergies. Requires glasses for reading. Emergency medication for asthma kept in school office.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Enrollments Tab -->
+                        <div id="enrollments-tab" class="tab-pane hidden">
+                            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-800">Enrollments</h3>
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-plus mr-2"></i> Enroll in New Course
+                                    </button>
+                                </div>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Course Name
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Subject
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Instructor
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Schedule
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Enrollment Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Final Grade
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Math</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Dr. Smith</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Mon, Wed, Fri 10:00 AM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 1, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Physics 101</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Science</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Prof. Johnson</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Tue, Thu 2:00 PM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 5, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full status-active">Active</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">English Literature</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">English</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Ms. Williams</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Mon, Wed 3:00 PM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">August 28, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full status-graduated">Completed</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">A-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-certificate"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payments Tab -->
+                        <div id="payments-tab" class="tab-pane hidden">
+                            <!-- Payment Summary Cards -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-check-circle text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Total Paid</p>
+                                            <p class="text-xl font-bold text-gray-800">$2,450</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-exclamation-circle text-yellow-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Outstanding Balance</p>
+                                            <p class="text-xl font-bold text-gray-800">$350</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-clock text-red-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Overdue Amount</p>
+                                            <p class="text-xl font-bold text-gray-800">$150</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-calendar-alt text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Next Payment Due</p>
+                                            <p class="text-xl font-bold text-gray-800">Dec 1</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-plus mr-2"></i> Record New Payment
+                                    </button>
+                                    <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <i class="fas fa-file-invoice mr-2"></i> Create Invoice
+                                    </button>
+                                    <button class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <i class="fas fa-calendar-check mr-2"></i> View Payment Plan
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment History Table -->
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment History</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Course
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Amount
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Payment Method
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Receipt Number
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">November 15, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$450</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Credit Card</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">R-2023-1101</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">October 20, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Physics 101</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$380</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Bank Transfer</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">R-2023-1005</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 10, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">English Literature</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">$350</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Cash</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">R-2023-0908</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Attendance Tab -->
+                        <div id="attendance-tab" class="tab-pane hidden">
+                            <!-- Attendance Summary -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-percentage text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Overall Rate</p>
+                                            <p class="text-xl font-bold text-gray-800">92.5%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-check-circle text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Present Days</p>
+                                            <p class="text-xl font-bold text-gray-800">142</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-times-circle text-red-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Absent Days</p>
+                                            <p class="text-xl font-bold text-gray-800">8</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-clock text-yellow-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Late Days</p>
+                                            <p class="text-xl font-bold text-gray-800">4</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Filters -->
+                            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                                        <div class="flex space-x-2">
+                                            <input type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <input type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">All Courses</option>
+                                            <option value="math">Advanced Mathematics</option>
+                                            <option value="physics">Physics 101</option>
+                                            <option value="english">English Literature</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">All Status</option>
+                                            <option value="present">Present</option>
+                                            <option value="absent">Absent</option>
+                                            <option value="late">Late</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-end">
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Attendance Records Table -->
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Attendance Records</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Course
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Check-in Time
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Check-out Time
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Notes
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">November 15, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Advanced Mathematics</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Present</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">9:55 AM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">11:05 AM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">November 14, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Physics 101</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Late</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">2:15 PM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">3:45 PM</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Traffic delay</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">November 13, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">English Literature</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Absent</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Sick leave</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Documents Tab -->
+                        <div id="documents-tab" class="tab-pane hidden">
+                            <!-- Actions -->
+                            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-800">Documents</h3>
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i class="fas fa-upload mr-2"></i> Upload New Document
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Documents List -->
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Document Type
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Title
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Upload Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Verified Status
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Expiry Date
+                                                </th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Birth Certificate</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Birth Certificate</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 1, 2022</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Verified</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">-</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Medical Report</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Annual Medical Checkup</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">August 15, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Verified</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">August 15, 2024</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 text-sm text-gray-800">ID Card</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">Student ID Card</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 5, 2023</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">September 5, 2024</td>
+                                                <td class="px-4 py-3 text-sm text-gray-800">
+                                                    <button class="text-blue-600 hover:text-blue-500 mr-2">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-green-600 hover:text-green-500 mr-2">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="text-red-600 hover:text-red-500">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Log Tab -->
+                        <div id="activity-tab" class="tab-pane hidden">
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Activity Timeline</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-user-plus text-blue-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm text-gray-800">Student enrolled in <span class="font-medium">Advanced Mathematics</span></p>
+                                            <p class="text-xs text-gray-500 mt-1">September 1, 2023 at 10:30 AM</p>
+                                            <p class="text-xs text-gray-500 mt-1">Performed by: Admin User</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-dollar-sign text-green-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm text-gray-800">Payment of <span class="font-medium">$450</span> received for <span class="font-medium">Advanced Mathematics</span></p>
+                                            <p class="text-xs text-gray-500 mt-1">November 15, 2023 at 2:15 PM</p>
+                                            <p class="text-xs text-gray-500 mt-1">Performed by: Finance Team</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-user-check text-purple-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm text-gray-800">Attendance marked as <span class="font-medium">Present</span> for <span class="font-medium">Physics 101</span></p>
+                                            <p class="text-xs text-gray-500 mt-1">November 14, 2023 at 2:15 PM</p>
+                                            <p class="text-xs text-gray-500 mt-1">Performed by: Prof. Johnson</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-edit text-yellow-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm text-gray-800">Student profile updated</p>
+                                            <p class="text-xs text-gray-500 mt-1">November 10, 2023 at 11:30 AM</p>
+                                            <p class="text-xs text-gray-500 mt-1">Performed by: Admin User</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-upload text-red-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <p class="text-sm text-gray-800">Document <span class="font-medium">Medical Report</span> uploaded</p>
+                                            <p class="text-xs text-gray-500 mt-1">August 15, 2023 at 9:45 AM</p>
+                                            <p class="text-xs text-gray-500 mt-1">Performed by: Admin User</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Student Create/Edit Form -->
+                <div id="studentFormView" class="p-6 hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">Add New Student</h2>
+                            <button id="cancelForm" class="text-gray-600 hover:text-gray-800">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <form id="studentForm">
+                            <!-- Personal Information -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                        <input type="text" id="fullName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                        <input type="date" id="dob" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
+                                        <select id="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                        <input type="tel" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                        <input type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Parent/Guardian Information -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Parent/Guardian Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Parent Name *</label>
+                                        <input type="text" id="parentName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Parent Phone *</label>
+                                        <input type="tel" id="parentPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Parent Email</label>
+                                        <input type="email" id="parentEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
+                                        <input type="tel" id="emergencyContact" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Academic Information -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Academic Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Education Level *</label>
+                                        <select id="educationLevel" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                            <option value="">Select Education Level</option>
+                                            <option value="elementary">Elementary</option>
+                                            <option value="middle">Middle School</option>
+                                            <option value="high">High School</option>
+                                            <option value="college">College</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">School Name</label>
+                                        <input type="text" id="schoolName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Registration Date *</label>
+                                        <input type="date" id="registrationDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                                        <select id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                            <option value="">Select Status</option>
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="graduated">Graduated</option>
+                                            <option value="suspended">Suspended</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Information -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Medical Notes</label>
+                                        <textarea id="medicalNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">General Notes</label>
+                                        <textarea id="generalNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" id="resetFormBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    Reset Form
+                                </button>
+                                <button type="button" id="saveAndAddBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    Save & Add Another
+                                </button>
+                                <button type="submit" id="saveBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity modal-backdrop" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full fade-in">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Delete Student
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Are you sure you want to delete this student? This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="confirmDelete" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Delete
+                    </button>
+                    <button type="button" id="cancelDelete" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample student data
+        const students = [
+            {
+                id: 1,
+                name: "John Doe",
+                photo: "https://picsum.photos/seed/student1/40/40.jpg",
+                parentName: "Jane Doe",
+                parentPhone: "+1 (555) 987-6543",
+                educationLevel: "High School",
+                status: "active",
+                activeCourses: 5,
+                registrationDate: "2022-09-01"
+            },
+            {
+                id: 2,
+                name: "Jane Smith",
+                photo: "https://picsum.photos/seed/student2/40/40.jpg",
+                parentName: "Robert Smith",
+                parentPhone: "+1 (555) 876-5432",
+                educationLevel: "Middle School",
+                status: "active",
+                activeCourses: 3,
+                registrationDate: "2023-01-15"
+            },
+            {
+                id: 3,
+                name: "Michael Johnson",
+                photo: "https://picsum.photos/seed/student3/40/40.jpg",
+                parentName: "Susan Johnson",
+                parentPhone: "+1 (555) 765-4321",
+                educationLevel: "Elementary",
+                status: "inactive",
+                activeCourses: 0,
+                registrationDate: "2022-08-20"
+            },
+            {
+                id: 4,
+                name: "Emily Davis",
+                photo: "https://picsum.photos/seed/student4/40/40.jpg",
+                parentName: "Thomas Davis",
+                parentPhone: "+1 (555) 654-3210",
+                educationLevel: "High School",
+                status: "active",
+                activeCourses: 4,
+                registrationDate: "2022-09-05"
+            },
+            {
+                id: 5,
+                name: "Robert Wilson",
+                photo: "https://picsum.photos/seed/student5/40/40.jpg",
+                parentName: "Patricia Wilson",
+                parentPhone: "+1 (555) 543-2109",
+                educationLevel: "College",
+                status: "graduated",
+                activeCourses: 0,
+                registrationDate: "2021-09-10"
+            },
+            {
+                id: 6,
+                name: "Sarah Brown",
+                photo: "https://picsum.photos/seed/student6/40/40.jpg",
+                parentName: "James Brown",
+                parentPhone: "+1 (555) 432-1098",
+                educationLevel: "High School",
+                status: "suspended",
+                activeCourses: 2,
+                registrationDate: "2022-09-15"
+            },
+            {
+                id: 7,
+                name: "David Miller",
+                photo: "https://picsum.photos/seed/student7/40/40.jpg",
+                parentName: "Linda Miller",
+                parentPhone: "+1 (555) 321-0987",
+                educationLevel: "Middle School",
+                status: "active",
+                activeCourses: 3,
+                registrationDate: "2023-02-20"
+            },
+            {
+                id: 8,
+                name: "Jessica Taylor",
+                photo: "https://picsum.photos/seed/student8/40/40.jpg",
+                parentName: "William Taylor",
+                parentPhone: "+1 (555) 210-9876",
+                educationLevel: "Elementary",
+                status: "active",
+                activeCourses: 2,
+                registrationDate: "2023-03-10"
+            },
+            {
+                id: 9,
+                name: "Christopher Anderson",
+                photo: "https://picsum.photos/seed/student9/40/40.jpg",
+                parentName: "Mary Anderson",
+                parentPhone: "+1 (555) 109-8765",
+                educationLevel: "High School",
+                status: "active",
+                activeCourses: 4,
+                registrationDate: "2022-08-25"
+            },
+            {
+                id: 10,
+                name: "Amanda Thomas",
+                photo: "https://picsum.photos/seed/student10/40/40.jpg",
+                parentName: "Richard Thomas",
+                parentPhone: "+1 (555) 098-7654",
+                educationLevel: "College",
+                status: "active",
+                activeCourses: 3,
+                registrationDate: "2022-09-20"
+            }
+        ];
+        
+        // DOM Elements
+        const studentListView = document.getElementById('studentListView');
+        const studentDetailView = document.getElementById('studentDetailView');
+        const studentFormView = document.getElementById('studentFormView');
+        const studentTableBody = document.getElementById('studentTableBody');
+        const confirmModal = document.getElementById('confirmModal');
+        
+        // View switching
+        function showStudentList() {
+            studentListView.classList.remove('hidden');
+            studentDetailView.classList.add('hidden');
+            studentFormView.classList.add('hidden');
+        }
+        
+        function showStudentDetail() {
+            studentListView.classList.add('hidden');
+            studentDetailView.classList.remove('hidden');
+            studentFormView.classList.add('hidden');
+        }
+        
+        function showStudentForm() {
+            studentListView.classList.add('hidden');
+            studentDetailView.classList.add('hidden');
+            studentFormView.classList.remove('hidden');
+        }
+        
+        // Event listeners for view switching
+        document.getElementById('addStudentBtn').addEventListener('click', showStudentForm);
+        document.getElementById('backToList').addEventListener('click', showStudentList);
+        document.getElementById('cancelForm').addEventListener('click', showStudentList);
+        
+        // Toggle filters panel
+        document.getElementById('toggleFilters').addEventListener('click', function() {
+            const filtersPanel = document.getElementById('filtersPanel');
+            const icon = this.querySelector('i');
+            
+            if (filtersPanel.classList.contains('hidden')) {
+                filtersPanel.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                this.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Hide Filters';
+            } else {
+                filtersPanel.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                this.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Show Filters';
+            }
+        });
+        
+        // Dropdown toggles
+        function setupDropdown(buttonId, dropdownId) {
+            const button = document.getElementById(buttonId);
+            const dropdown = document.getElementById(dropdownId);
+            
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+                
+                // Close other dropdowns
+                document.querySelectorAll('[id$="Dropdown"]').forEach(d => {
+                    if (d.id !== dropdownId) {
+                        d.classList.add('hidden');
+                    }
+                });
+            });
+            
+            document.addEventListener('click', function() {
+                dropdown.classList.add('hidden');
+            });
+        }
+        
+        setupDropdown('exportBtn', 'exportDropdown');
+        setupDropdown('bulkActionsBtn', 'bulkActionsDropdown');
+        setupDropdown('moreActionsBtn', 'moreActionsDropdown');
+        
+        // Tab switching in student detail view
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Update button styles
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                this.classList.remove('border-transparent', 'text-gray-500');
+                this.classList.add('border-blue-500', 'text-blue-600');
+                
+                // Show corresponding tab
+                tabPanes.forEach(pane => {
+                    pane.classList.add('hidden');
+                });
+                
+                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            });
+        });
+        
+        // Populate student table
+        function populateStudentTable() {
+            studentTableBody.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-hover';
+                
+                // Determine status badge class
+                let statusClass = '';
+                switch(student.status) {
+                    case 'active': statusClass = 'status-active'; break;
+                    case 'inactive': statusClass = 'status-inactive'; break;
+                    case 'graduated': statusClass = 'status-graduated'; break;
+                    case 'suspended': statusClass = 'status-suspended'; break;
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3">
+                        <input type="checkbox" class="custom-checkbox student-checkbox" data-id="${student.id}">
+                    </td>
+                    <td class="px-4 py-3">
+                        <img src="${student.photo}" alt="${student.name}" class="w-10 h-10 rounded-full">
+                    </td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                        <a href="#" class="student-detail-link" data-id="${student.id}">${student.name}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${student.parentName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${student.parentPhone}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${student.educationLevel}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${student.status.charAt(0).toUpperCase() + student.status.slice(1)}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${student.activeCourses}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">${formatDate(student.registrationDate)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-800">
+                        <button class="text-blue-600 hover:text-blue-500 mr-2 view-student" data-id="${student.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="text-green-600 hover:text-green-500 mr-2 edit-student" data-id="${student.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-500 delete-student" data-id="${student.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                studentTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.student-detail-link, .view-student').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showStudentDetail();
+                });
+            });
+            
+            document.querySelectorAll('.edit-student').forEach(button => {
+                button.addEventListener('click', function() {
+                    showStudentForm();
+                });
+            });
+            
+            document.querySelectorAll('.delete-student').forEach(button => {
+                button.addEventListener('click', function() {
+                    confirmModal.classList.remove('hidden');
+                });
+            });
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Select all checkbox
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+        
+        // Form submission
+        document.getElementById('studentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // In a real application, this would save the data to a database
+            alert('Student saved successfully!');
+            showStudentList();
+        });
+        
+        // Save and add another button
+        document.getElementById('saveAndAddBtn').addEventListener('click', function() {
+            // In a real application, this would save the data to a database
+            alert('Student saved successfully!');
+            document.getElementById('studentForm').reset();
+        });
+        
+        // Reset form button
+        document.getElementById('resetFormBtn').addEventListener('click', function() {
+            document.getElementById('studentForm').reset();
+        });
+        
+        // Confirmation modal
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            // In a real application, this would delete the student from the database
+            alert('Student deleted successfully!');
+            confirmModal.classList.add('hidden');
+        });
+        
+        document.getElementById('cancelDelete').addEventListener('click', function() {
+            confirmModal.classList.add('hidden');
+        });
+        
+        // Initialize the page
+        populateStudentTable();
+    </script>
+</body>
+</html>
