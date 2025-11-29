@@ -1,1 +1,69 @@
-"" 
+# Core Django
+Django
+psycopg2-binary
+
+# Django REST Framework
+djangorestframework
+djangorestframework-simplejwt
+drf-spectacular
+
+# Database & Caching
+django-redis
+redis
+
+# Task Queue
+celery
+django-celery-beat
+
+# CORS
+django-cors-headers
+
+# Filtering & Search
+django-filter
+
+# Environment Variables
+python-dotenv
+
+# PDF Generation
+WeasyPrint
+django-weasyprint
+
+# Excel/CSV Processing
+openpyxl
+pandas
+
+# Development Tools
+django-extensions
+ipython
+
+# Testing
+pytest
+pytest-django
+pytest-cov
+factory-boy
+
+# Code Quality
+flake8
+black
+isort
+
+# Production Server
+gunicorn
+whitenoise
+
+# Monitoring (optional)
+sentry-sdk
+
+# File Storage (optional - for AWS S3)
+# boto3==1.34.34
+# django-storages==1.14.2
+
+# SMS Gateway (optional)
+# twilio==8.13.0
+
+# Email
+# django-anymail==10.3  # For services like SendGrid, Mailgun
+
+# Documentation
+# mkdocs==1.5.3
+# mkdocs-material==9.5.6

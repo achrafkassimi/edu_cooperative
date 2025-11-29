@@ -5,6 +5,8 @@
 ---
 
 ## Phase 1: Project Setup (Week 1-2)
+admin@test.com
+123456
 
 ### Week 1: Environment & Database Setup
 
